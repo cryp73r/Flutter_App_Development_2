@@ -10,6 +10,7 @@ class MyApp extends StatelessWidget {
               title: Text("Memes Generator"),
               backgroundColor: Colors.black54,
             ),
+            resizeToAvoidBottomInset: false,
             body: AppBody()
         )
     );

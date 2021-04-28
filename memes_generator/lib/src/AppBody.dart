@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:memes_generator/utils/utils.dart';
 
 class AppBody extends StatefulWidget {
   @override
@@ -6,7 +7,12 @@ class AppBody extends StatefulWidget {
 }
 
 class _AppBodyState extends State<AppBody> {
-  String dropDownValue = "10-Guy";
+  final formKey = GlobalKey<FormState>();
+  String dropDownValue;
+  String top="";
+  String bottom="";
+  String apiUrl = "";
+  bool loaded = false;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,10 +22,11 @@ class _AppBodyState extends State<AppBody> {
           Form(
             child: Column(
               children: [
-                memesOption(dropDownValue),
+                memesOption(),
                 topTittle(),
                 bottomTittle(),
-                submitButton(),
+                Padding(padding: EdgeInsets.only(bottom: 30.0),),
+                imageWidget(),
               ],
             ),
           ),
@@ -28,22 +35,22 @@ class _AppBodyState extends State<AppBody> {
     );
   }
 
-  Widget memesOption(String dropDownValue) {
-    List<String> optionsList = ["10-Guy", "1950s-Middle-Finger", "1990s-First-World-Problems"];
+  Widget memesOption() {
     return DropdownButton(
-      value: dropDownValue,
       onChanged: (String newValue) {
         setState(() {
           dropDownValue = newValue;
-          debugPrint(newValue);
+          apiUrl = getImage();
         });
       },
       items: optionsList.map<DropdownMenuItem<String>>((String value) {
       return DropdownMenuItem<String>(
         value: value,
-        child: Text(value),
+        child: Text(value, style: TextStyle(fontSize: 14.265),),
       );
     }).toList(),
+      hint: Text("Please Choose Meme Template"),
+      value: dropDownValue,
     );
   }
 
@@ -54,6 +61,12 @@ class _AppBodyState extends State<AppBody> {
         labelText: "Top Text",
         hintText: "Boom Boom"
       ),
+      onChanged: (String value) {
+        setState(() {
+          top = value;
+          apiUrl = getImage();
+        });
+      },
     );
   }
 
@@ -64,13 +77,27 @@ class _AppBodyState extends State<AppBody> {
           labelText: "Bottom Text",
           hintText: "Bingo"
       ),
+      onChanged: (String value) {
+        setState(() {
+          bottom = value;
+          apiUrl = getImage();
+        });
+      },
     );
   }
 
-  Widget submitButton() {
-    return ElevatedButton(
-        onPressed: () => debugPrint("Submit Pressed"),
-        child: Text("Submit")
+  Widget imageWidget() {
+    return Container(
+      child: loaded ? Image.network(apiUrl) : Text("Crafted with ❤ by CRYP73R"),
     );
   }
+
+String getImage() {
+    var apiUrl;
+    setState(() {
+      apiUrl = "http://apimeme.com/meme?meme=$dropDownValue&top=$top&bottom=$bottom";
+      loaded = true;
+    });
+    return apiUrl;
+}
 }
