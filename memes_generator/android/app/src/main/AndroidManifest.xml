@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cryp73r.memes_generator">
    <application
-        android:label="memes_generator"
+        android:label="Memes Generator"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

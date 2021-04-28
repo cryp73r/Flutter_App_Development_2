@@ -8,10 +8,6 @@ class AppBody extends StatefulWidget {
 
 class _AppBodyState extends State<AppBody> {
   final formKey = GlobalKey<FormState>();
-  String dropDownValue;
-  String top="";
-  String bottom="";
-  String apiUrl = "";
   bool loaded = false;
   @override
   Widget build(BuildContext context) {
@@ -25,11 +21,11 @@ class _AppBodyState extends State<AppBody> {
                 memesOption(),
                 topTittle(),
                 bottomTittle(),
-                Padding(padding: EdgeInsets.only(bottom: 30.0),),
-                imageWidget(),
+                Container(margin: EdgeInsets.only(bottom: 20.0),),
               ],
             ),
           ),
+          imageWidget(),
         ],
       ),
     );
@@ -57,9 +53,10 @@ class _AppBodyState extends State<AppBody> {
   Widget topTittle() {
     return TextFormField(
       keyboardType: TextInputType.text,
+      autocorrect: false,
       decoration: InputDecoration(
         labelText: "Top Text",
-        hintText: "Boom Boom"
+        hintText: "Boom Boom",
       ),
       onChanged: (String value) {
         setState(() {
@@ -73,6 +70,7 @@ class _AppBodyState extends State<AppBody> {
   Widget bottomTittle() {
     return TextFormField(
       keyboardType: TextInputType.text,
+      autocorrect: false,
       decoration: InputDecoration(
           labelText: "Bottom Text",
           hintText: "Bingo"

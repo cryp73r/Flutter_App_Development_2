@@ -1,3 +1,7 @@
+String dropDownValue;
+String top="";
+String bottom="";
+String apiUrl = "";
 List<String> optionsList = [
   "10-Guy",
   "1990s-First-World-Problems",
