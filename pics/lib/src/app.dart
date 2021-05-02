@@ -5,6 +5,9 @@ import 'package:http/http.dart' show get;
 import 'models/image_model.dart';
 import 'widgets/image_list.dart';
 
+// Use StatelessWidget when not using variables
+// Use StatefulWidget when using variables
+
 class App extends StatefulWidget {
   @override
   _AppState createState() => _AppState();
