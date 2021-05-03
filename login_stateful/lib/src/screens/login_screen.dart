@@ -6,6 +6,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+// Key for widget controller
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
