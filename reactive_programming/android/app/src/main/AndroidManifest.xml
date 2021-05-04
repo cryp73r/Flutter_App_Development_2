@@ -1,9 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cryp73r.memes_generator">
-    <uses-permission android:name="android.permission.INTERNET"/>
+    package="com.cryp73r.reactive_programming">
    <application
-        android:label="Memes Generator"
-        android:usesCleartextTraffic="true"
+        android:label="reactive_programming"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
