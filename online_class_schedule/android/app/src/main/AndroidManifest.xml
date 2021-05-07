@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cryp73r.online_class_schedule">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="online_class_schedule"
+        android:label="OCS"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:online_class_schedule/src/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({Key key}) : super(key: key);
@@ -8,13 +11,22 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
+
+  _setRollNumber(String strRollNumber) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString("strRollNo", strRollNumber);
+    });
+  }
+
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(),
+        resizeToAvoidBottomInset: false,
         body: Container(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           alignment: Alignment.center,
           child: Column(
             children: [
@@ -30,17 +42,49 @@ class _StartScreenState extends State<StartScreen> {
                   ),
                 ],
               ),
-              Container(margin: EdgeInsets.only(top: 60.0, bottom: 60.0),),
+              Container(margin: const EdgeInsets.only(top: 60.0, bottom: 60.0),),
               Form(key: formKey, child: Column(
                 children: [
                   rollNoField(),
-                  Container(margin: EdgeInsets.only(top: 15.0, bottom: 15.0),),
+                  Container(margin: const EdgeInsets.only(top: 15.0, bottom: 15.0),),
                   goButton(),
                 ],
               )),
+              Expanded(
+                child: Align(
+                  alignment: FractionalOffset.bottomCenter,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        child: Text("Report a Problem🐞",
+                          style: TextStyle(
+                            fontSize: 14.7,
+                            color: Colors.deepPurpleAccent
+                          ),
+                        ),
+                        onTap: () async {
+                          if (await canLaunch(reportPrbUrl)) {
+                            await launch(reportPrbUrl);
+                          } else {
+                            throw "Could not launch";
+                          }
+                        },
+                      ),
+                      Container(margin: const EdgeInsets.only(top: 8.0, bottom: 8.0),),
+                      Text("Crafted with ❤ by CRYP73R",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
-        )
+        ),
       );
     }
 
@@ -76,13 +120,16 @@ class _StartScreenState extends State<StartScreen> {
         ),
       ),
       validator: (String value) {
-        if (!value.contains("1901220100")) {
+        if (!value.startsWith("1901220100") || value.length!=13) {
           return "Please Enter a Valid Roll Number";
+        }
+        else if (int.parse(value.substring(10))>145) {
+          return "Max. Roll Number Exceeded\n\n1) CS41 -> 1 - 28\n2) CS42 -> 29 - 57\n3) CS43 -> 58 - 86\n4) CS44 -> 87 - 117\n5) CS45 -> 118 - 145";
         }
         return null;
       },
       onSaved: (String value) {
-        debugPrint(value);
+        _setRollNumber(value);
       },
     );
   }
@@ -96,6 +143,7 @@ class _StartScreenState extends State<StartScreen> {
           if (formKey.currentState.validate()) {
             formKey.currentState.save();
             formKey.currentState.reset();
+            Navigator.pushReplacementNamed(context, "/detailScreen");
           }
           else {
             debugPrint("Not Valid!");

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_class_schedule/src/ui/detailScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:online_class_schedule/src/ui/startScreen.dart';
 
 class UI extends StatelessWidget {
@@ -33,18 +34,43 @@ class UI extends StatelessWidget {
       ),
       themeMode: ThemeMode.dark,
       home: Home(),
+      routes: {
+        "/startScreen": (_) => StartScreen(),
+        "/detailScreen": (_) => DetailScreen(),
+      },
     );
   }
 }
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
+
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  String _strRollNo = "";
+
+  _getRollNumber() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _strRollNo = (prefs.getString("strRollNo") ?? "");
+    });
+  }
+
+  @override
+  void initState() {
+    _getRollNumber();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StartScreen(),
+      body: _strRollNo==""?StartScreen():DetailScreen(),
     );
   }
 }
+
 
