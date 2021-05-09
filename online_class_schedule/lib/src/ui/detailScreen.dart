@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_class_schedule/src/apiDataHandler/getJsonClassData.dart';
+import 'package:online_class_schedule/src/utils/getBranchCode.dart';
 import 'package:online_class_schedule/src/utils/getGroup.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   String _group;
+  int _branchCode;
   String _strRollNo = "";
 
   _getRollNumber() async {
@@ -21,6 +23,7 @@ class _DetailScreenState extends State<DetailScreen> {
     setState(() {
       _strRollNo = (prefs.getString("strRollNo") ?? "");
       _group = getGroup(_strRollNo);
+      _branchCode = getBranchCode(_strRollNo);
     });
   }
 
@@ -47,7 +50,7 @@ class _DetailScreenState extends State<DetailScreen> {
         ],
       ),
       body: _group=="groupNo"?groupErrorWidget():FutureBuilder(
-        future: getJsonClassData(),
+        future: _branchCode==10?getJsonClassData(apiUrlCS):getJsonClassData(apiUrlIT),
           builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
           if (snapshot.hasData) {
             Map rawData = snapshot.data;
@@ -96,12 +99,12 @@ class _DetailScreenState extends State<DetailScreen> {
         :Column(
       children: [
         Center(child: Container(
-          margin: const EdgeInsets.only(bottom: 8.0),
+          margin: const EdgeInsets.only(top: 8.0),
           child: Text("Today you have ${rawData[_group]["count"]["class"]} Lecture, ${rawData[_group]["count"]["tute"]} Tute and ${rawData[_group]["count"]["lab"]} Lab",
             style: TextStyle(
               fontSize: 17.0,
-              color: Colors.purpleAccent,
-              fontWeight: FontWeight.bold,
+              color: Color(0xFFEB596E),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),),
@@ -274,7 +277,7 @@ class _DetailScreenState extends State<DetailScreen> {
           value: "discrepancy",
         ),
         const PopupMenuItem(
-          child: Text("Missing"),
+          child: Text("Missing Data"),
           value: "missing",
         ),
         const PopupMenuItem(

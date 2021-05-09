@@ -78,6 +78,13 @@ class _StartScreenState extends State<StartScreen> {
                           fontSize: 15.0,
                         ),
                       ),
+                      Container(margin: const EdgeInsets.only(top: 0.7, bottom: 0.7),),
+                      Text("v1.2.4",
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          color: Colors.white60,
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -120,11 +127,17 @@ class _StartScreenState extends State<StartScreen> {
         ),
       ),
       validator: (String value) {
-        if (!value.startsWith("1901220100") || value.length!=13) {
+        if (!value.startsWith("1901220100") && !value.startsWith("1901220130")) {
           return "Please Enter a Valid Roll Number";
         }
-        else if (int.parse(value.substring(10))>145) {
-          return "Max. Roll Number Exceeded\n\n1) CS41 -> 1 - 28\n2) CS42 -> 29 - 57\n3) CS43 -> 58 - 86\n4) CS44 -> 87 - 117\n5) CS45 -> 118 - 145";
+        else if (value.length!=13) {
+          return "Please Enter a Valid 13-digit Roll Number";
+        }
+        else if (value.startsWith("1901220100") && int.parse(value.substring(10))>145) {
+          return "Max. Roll Number Exceeded\n\n1) CS41 -> 001 - 028\n2) CS42 -> 029 - 057\n3) CS43 -> 058 - 086\n4) CS44 -> 087 - 117\n5) CS45 -> 118 - 145";
+        }
+        else if (value.startsWith("1901220130") && int.parse(value.substring(10))>134) {
+          return "Max. Roll Number Exceeded\n\n1) IT41 -> 001 - 033\n2) IT42 -> 034 - 067\n3) IT43 -> 068 - 100\n4) IT44 -> 101 - 134";
         }
         return null;
       },
