@@ -79,7 +79,7 @@ class _StartScreenState extends State<StartScreen> {
                         ),
                       ),
                       Container(margin: const EdgeInsets.only(top: 0.7, bottom: 0.7),),
-                      Text("v1.2.4",
+                      Text(appVer,
                         style: TextStyle(
                           fontSize: 11.0,
                           color: Colors.white60,

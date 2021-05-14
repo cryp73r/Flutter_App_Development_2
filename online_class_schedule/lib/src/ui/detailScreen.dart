@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:online_class_schedule/src/apiDataHandler/getJsonClassData.dart';
+import 'package:online_class_schedule/src/ui/updateAppScreen.dart';
 import 'package:online_class_schedule/src/utils/getBranchCode.dart';
 import 'package:online_class_schedule/src/utils/getGroup.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -281,12 +282,20 @@ class _DetailScreenState extends State<DetailScreen> {
           value: "missing",
         ),
         const PopupMenuItem(
+          child: Text("Timetable Changed"),
+          value: "timeTable",
+        ),
+        const PopupMenuItem(
           child: Text("Change Roll No"),
           value: "change",
         ),
         const PopupMenuItem(
           child: Text("Report a Problem"),
           value: "reportPrb",
+        ),
+        const PopupMenuItem(
+          child: Text("Check for Updates"),
+          value: "update",
         ),
       ],
       onSelected: (value) async {
@@ -304,6 +313,13 @@ class _DetailScreenState extends State<DetailScreen> {
             throw 'Could not launch';
           }
         }
+        else if (value.toString()=="timeTable") {
+          if (await canLaunch(timeTableUrl)) {
+            await launch(timeTableUrl);
+          } else {
+            throw 'Could not launch';
+          }
+        }
         else if (value.toString()=="change") {
           _removeRollNumber();
           Navigator.pushReplacementNamed(context, "/startScreen");
@@ -314,6 +330,9 @@ class _DetailScreenState extends State<DetailScreen> {
           } else {
             throw 'Could not launch';
           }
+        }
+        else if (value.toString()=="update") {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateAppScreen()));
         }
       },
     );
