@@ -1,6 +1,6 @@
-# online_class_schedule
+# Online Class Schedule (OCS)
 
-Apllication for OCS.
+Mobile Application for OCS. Based on clean Dark UI and Ad-Free. Well only available for SRMCEM CS & IT 2nd Year Students.  
 
 ## Getting Started
 
