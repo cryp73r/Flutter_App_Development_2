@@ -105,7 +105,7 @@ class _StartScreenState extends State<StartScreen> {
             fontSize: 20.0,
             letterSpacing: 4.0
           ),
-          hintText: "1901220100XXX",
+          hintText: "1901220XX0XXX",
         hintStyle: TextStyle(
           color: Colors.white54,
           fontStyle: FontStyle.italic,

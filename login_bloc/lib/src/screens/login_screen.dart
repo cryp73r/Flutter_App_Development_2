@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:login_bloc/src/blocs/bloc.dart';
 
-final bloc = Bloc();
-
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key key}) : super(key: key);
 
@@ -14,7 +12,9 @@ class LoginScreen extends StatelessWidget {
         children: [
           emailField(),
           passwordField(),
-          Container(margin: const EdgeInsets.only(top: 25.0),),
+          Container(
+            margin: const EdgeInsets.only(top: 25.0),
+          ),
           loginButton(),
         ],
       ),
@@ -22,30 +22,46 @@ class LoginScreen extends StatelessWidget {
   }
 
   Widget emailField() {
-    return TextField(
-      keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        hintText: "you@example.com",
-        labelText: "Email Address",
-        errorText: "Invalid Email"
-      ),
-    );
+    return StreamBuilder(
+        stream: bloc.email,
+        builder: (context, snapshot) {
+          return TextField(
+            onChanged: bloc.changeEmail,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              hintText: "you@example.com",
+              labelText: "Email Address",
+              errorText: snapshot.error,
+            ),
+          );
+        });
   }
 
   Widget passwordField() {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: "Password",
-        labelText: "Password",
-      ),
-      // obscureText: true,
+    return StreamBuilder(
+      stream: bloc.password,
+        builder: (context, snapshot) {
+          return TextField(
+            onChanged: bloc.changePassword,
+            decoration: InputDecoration(
+              hintText: "Password",
+              labelText: "Password",
+              errorText: snapshot.error,
+            ),
+            // obscureText: true,
+          );
+        }
     );
   }
 
   Widget loginButton() {
-    return ElevatedButton(
-        onPressed: () => debugPrint("Submit Pressed"),
-        child: Text("Login")
+    return StreamBuilder(
+      stream: bloc.submitValid,
+        builder: (context, snapshot) {
+          return ElevatedButton(
+              onPressed: () => snapshot.hasError?null:() => debugPrint("Submitted"),
+              child: Text("Login"));
+        }
     );
   }
 }
