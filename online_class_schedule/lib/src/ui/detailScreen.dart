@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:online_class_schedule/src/apiDataHandler/getJsonClassData.dart';
+import 'package:online_class_schedule/src/ui/noticeScreen.dart';
 import 'package:online_class_schedule/src/ui/updateAppScreen.dart';
 import 'package:online_class_schedule/src/utils/getBranchCode.dart';
 import 'package:online_class_schedule/src/utils/getGroup.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/utils.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -47,32 +48,41 @@ class _DetailScreenState extends State<DetailScreen> {
         title: Text("Online Class Schedule"),
         centerTitle: true,
         actions: [
-          popUpMenuButton(),
+          logoutButton(),
         ],
       ),
-      body: _group=="groupNo"?groupErrorWidget():FutureBuilder(
-        future: _branchCode==10?getJsonClassData(apiUrlCS):getJsonClassData(apiUrlIT),
-          builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
-          if (snapshot.hasData) {
-            Map rawData = snapshot.data;
-            return groupSuccessWidget(rawData);
-          }
-          return Center(child: Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                Container(margin: const EdgeInsets.only(top: 5.0, bottom: 5.0),),
-                Text("Hold Tight - Getting your Stuff Ready...",
-                  style: TextStyle(
-                    letterSpacing: 2.0,
+      body: _group == "groupNo"
+          ? groupErrorWidget()
+          : FutureBuilder(
+              future: _branchCode == 10
+                  ? getJsonClassData(apiUrlCS)
+                  : getJsonClassData(apiUrlIT),
+              builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
+                if (snapshot.hasData) {
+                  Map rawData = snapshot.data;
+                  return groupSuccessWidget(rawData);
+                }
+                return Center(
+                  child: Container(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        Container(
+                          margin: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                        ),
+                        Text(
+                          "Hold Tight - Getting your Stuff Ready...",
+                          style: TextStyle(
+                            letterSpacing: 2.0,
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                )
-              ],
-            ),
-          ),);
-          }
-      ),
+                );
+              }),
+      drawer: appDrawer(),
     );
   }
 
@@ -81,260 +91,436 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget groupSuccessWidget(Map rawData) {
-    return (rawData[_group]["count"]["class"]+rawData[_group]["count"]["tute"]+rawData[_group]["count"]["lab"])==0?
-    Center(child: Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("No Classes Today",
-            style: TextStyle(
-              fontSize: 25.0,
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 5.0,
+    return (rawData[_group]["count"]["class"] +
+                rawData[_group]["count"]["tute"] +
+                rawData[_group]["count"]["lab"]) ==
+            0
+        ? Center(
+            child: Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "No Classes Today",
+                    style: TextStyle(
+                      fontSize: 25.0,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 5.0,
+                    ),
+                  ),
+                ],
+              ),
             ),
+          )
+        : Column(
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    "Today you have ${rawData[_group]["count"]["class"]} Lecture, ${rawData[_group]["count"]["tute"]} Tute and ${rawData[_group]["count"]["lab"]} Lab",
+                    style: TextStyle(
+                      fontSize: 17.0,
+                      color: Color(0xFFEB596E),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              Flexible(
+                child: ListView.builder(
+                    padding: const EdgeInsets.all(8.0),
+                    reverse: false,
+                    itemCount: 9,
+                    itemBuilder: (_, int index) {
+                      return Wrap(direction: Axis.horizontal, children: [
+                        (rawData[_group]["detail"][index]).length == 2
+                            ? Card(
+                                color: Colors.white10,
+                                child: Column(
+                                  children: [
+                                    ExpansionTile(
+                                      title: Text(
+                                        rawData[_group]["detail"][index][0]
+                                            ["name"],
+                                        style:
+                                            TextStyle(color: Color(0xFF58A6FF)),
+                                      ),
+                                      subtitle: Text(rawData[_group]["detail"]
+                                              [index][0]["code"] +
+                                          " | " +
+                                          rawData[_group]["detail"][index][0]
+                                              ["teach"]),
+                                      children: [
+                                        Text(
+                                          "Meeting ID: " +
+                                              rawData[_group]["detail"][index]
+                                                  [0]["id"] +
+                                              "\n",
+                                          style: TextStyle(fontSize: 15.0),
+                                        ),
+                                        Text(
+                                          "Password: " +
+                                              rawData[_group]["detail"][index]
+                                                  [0]["pwd"],
+                                          style: TextStyle(fontSize: 15.0),
+                                        ),
+                                      ],
+                                      expandedCrossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      expandedAlignment: Alignment.topLeft,
+                                      childrenPadding:
+                                          const EdgeInsets.all(15.0),
+                                      leading: CircleAvatar(
+                                        child: Text(
+                                          rawData[_group]["detail"][index][0]
+                                                  ["timeS"] +
+                                              "\n----------\n" +
+                                              rawData[_group]["detail"][index]
+                                                  [0]["timeE"],
+                                          style: TextStyle(fontSize: 13.0),
+                                        ),
+                                        radius: 30.0,
+                                      ),
+                                      trailing: ElevatedButton(
+                                        child: Text("Join"),
+                                        onPressed: rawData[_group]["detail"]
+                                                    [index][0]["url"] ==
+                                                ""
+                                            ? null
+                                            : () async {
+                                                if (await canLaunch(
+                                                    rawData[_group]["detail"]
+                                                        [index][0]["url"])) {
+                                                  await launch(rawData[_group]
+                                                          ["detail"][index][0]
+                                                      ["url"]);
+                                                } else {
+                                                  throw 'Could not launch';
+                                                }
+                                              },
+                                      ),
+                                    ),
+                                    ExpansionTile(
+                                      title: Text(
+                                        rawData[_group]["detail"][index][1]
+                                            ["name"],
+                                        style:
+                                            TextStyle(color: Color(0xFF58A6FF)),
+                                      ),
+                                      subtitle: Text(rawData[_group]["detail"]
+                                              [index][1]["code"] +
+                                          " | " +
+                                          rawData[_group]["detail"][index][1]
+                                              ["teach"]),
+                                      children: [
+                                        Text(
+                                          "Meeting ID: " +
+                                              rawData[_group]["detail"][index]
+                                                  [1]["id"] +
+                                              "\n",
+                                          style: TextStyle(fontSize: 15.0),
+                                        ),
+                                        Text(
+                                          "Password: " +
+                                              rawData[_group]["detail"][index]
+                                                  [1]["pwd"],
+                                          style: TextStyle(fontSize: 15.0),
+                                        ),
+                                      ],
+                                      expandedCrossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      expandedAlignment: Alignment.topLeft,
+                                      childrenPadding:
+                                          const EdgeInsets.all(15.0),
+                                      leading: CircleAvatar(
+                                        child: Text(
+                                          rawData[_group]["detail"][index][1]
+                                                  ["timeS"] +
+                                              "\n----------\n" +
+                                              rawData[_group]["detail"][index]
+                                                  [1]["timeE"],
+                                          style: TextStyle(fontSize: 13.0),
+                                        ),
+                                        radius: 30.0,
+                                      ),
+                                      trailing: ElevatedButton(
+                                        child: Text("Join"),
+                                        onPressed: rawData[_group]["detail"]
+                                                    [index][1]["url"] ==
+                                                ""
+                                            ? null
+                                            : () async {
+                                                if (await canLaunch(
+                                                    rawData[_group]["detail"]
+                                                        [index][1]["url"])) {
+                                                  await launch(rawData[_group]
+                                                          ["detail"][index][1]
+                                                      ["url"]);
+                                                } else {
+                                                  throw 'Could not launch';
+                                                }
+                                              },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Card(
+                                color: Colors.white10,
+                                child: IgnorePointer(
+                                  ignoring: rawData[_group]["detail"][index]
+                                          ["id"] ==
+                                      "",
+                                  child: ExpansionTile(
+                                    title: Text(
+                                      rawData[_group]["detail"][index]["name"],
+                                      style:
+                                          TextStyle(color: Color(0xFF58A6FF)),
+                                    ),
+                                    subtitle: Text((rawData[_group]["detail"]
+                                                    [index]["code"] +
+                                                " | " +
+                                                rawData[_group]["detail"][index]
+                                                    ["teach"]) ==
+                                            " | "
+                                        ? ""
+                                        : rawData[_group]["detail"][index]
+                                                ["code"] +
+                                            " | " +
+                                            rawData[_group]["detail"][index]
+                                                ["teach"]),
+                                    children: [
+                                      Text(
+                                        "Meeting ID: " +
+                                            rawData[_group]["detail"][index]
+                                                ["id"] +
+                                            "\n",
+                                        style: TextStyle(fontSize: 15.0),
+                                      ),
+                                      Text(
+                                        "Password: " +
+                                            rawData[_group]["detail"][index]
+                                                ["pwd"],
+                                        style: TextStyle(fontSize: 15.0),
+                                      ),
+                                    ],
+                                    expandedCrossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    expandedAlignment: Alignment.topLeft,
+                                    childrenPadding: const EdgeInsets.all(15.0),
+                                    leading: CircleAvatar(
+                                      child: Text(
+                                        rawData[_group]["detail"][index]
+                                                ["timeS"] +
+                                            "\n----------\n" +
+                                            rawData[_group]["detail"][index]
+                                                ["timeE"],
+                                        style: TextStyle(fontSize: 13.0),
+                                      ),
+                                      radius: 30.0,
+                                    ),
+                                    trailing: (rawData[_group]["detail"][index]
+                                                    ["name"] ==
+                                                "One Hour Quiz" ||
+                                            rawData[_group]["detail"][index]
+                                                    ["name"] ==
+                                                "BREAK")
+                                        ? Text("")
+                                        : ElevatedButton(
+                                            child: Text("Join"),
+                                            onPressed: rawData[_group]["detail"]
+                                                        [index]["url"] ==
+                                                    ""
+                                                ? null
+                                                : () async {
+                                                    if (await canLaunch(
+                                                        rawData[_group]
+                                                                ["detail"]
+                                                            [index]["url"])) {
+                                                      await launch(
+                                                          rawData[_group]
+                                                                  ["detail"]
+                                                              [index]["url"]);
+                                                    } else {
+                                                      throw 'Could not launch';
+                                                    }
+                                                  },
+                                          ),
+                                  ),
+                                )),
+                      ]);
+                    }),
+              ),
+              Divider(
+                height: 1.0,
+              ),
+              Wrap(
+                direction: Axis.horizontal,
+                children: [
+                  Text(
+                    "Crafted with ❤ by CRYP73R",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15.0,
+                    ),
+                  )
+                ],
+              ),
+            ],
+          );
+  }
+
+  Drawer appDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: const EdgeInsets.all(0.0),
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Color(0xFF151313),
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  child: _branchCode == 10
+                      ? Text(
+                          "CS",
+                          style: TextStyle(fontSize: 50.0, letterSpacing: 4.0),
+                        )
+                      : Text(
+                          "IT",
+                          style: TextStyle(fontSize: 50.0, letterSpacing: 4.0),
+                        ),
+                  foregroundColor: Colors.black,
+                  radius: 55.0,
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 3.5, bottom: 3.5),
+                ),
+                Text(
+                  _strRollNo,
+                  style: TextStyle(
+                    // fontStyle: FontStyle.italic,
+                    fontSize: 17.0,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.notifications_active,
+              color: Colors.red,
+            ),
+            title: Text("NOTICE BOARD"),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => NoticeScreen()));
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.new_releases,
+              color: Colors.orangeAccent,
+            ),
+            title: Text("DISCREPANCY"),
+            onTap: () async {
+              if (await canLaunch(discrepancyUrl)) {
+                await launch(discrepancyUrl);
+              } else {
+                throw 'Could not launch';
+              }
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.data_usage,
+              color: Colors.purple,
+            ),
+            title: Text("MISSING DATA"),
+            onTap: () async {
+              if (await canLaunch(missingUrl)) {
+                await launch(missingUrl);
+              } else {
+                throw 'Could not launch';
+              }
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.next_week,
+              color: Colors.grey,
+            ),
+            title: Text("NEW NOTICE"),
+            onTap: () async {
+              if (await canLaunch(newNoticeUrl)) {
+                await launch(newNoticeUrl);
+              } else {
+                throw 'Could not launch';
+              }
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.calendar_today,
+              color: Colors.blue,
+            ),
+            title: Text("TIMETABLE CHANGED"),
+            onTap: () async {
+              if (await canLaunch(timeTableUrl)) {
+                await launch(timeTableUrl);
+              } else {
+                throw 'Could not launch';
+              }
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.report_problem,
+              color: Colors.yellow,
+            ),
+            title: Text("REPORT PROBLEM"),
+            onTap: () async {
+              if (await canLaunch(reportPrbUrl)) {
+                await launch(reportPrbUrl);
+              } else {
+                throw 'Could not launch';
+              }
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.system_update,
+              color: Colors.green,
+            ),
+            title: Text("CHECK FOR UPDATES"),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => UpdateAppScreen()));
+            },
           ),
         ],
       ),
-    ),)
-        :Column(
-      children: [
-        Center(child: Container(
-          margin: const EdgeInsets.only(top: 8.0),
-          child: Text("Today you have ${rawData[_group]["count"]["class"]} Lecture, ${rawData[_group]["count"]["tute"]} Tute and ${rawData[_group]["count"]["lab"]} Lab",
-            style: TextStyle(
-              fontSize: 17.0,
-              color: Color(0xFFEB596E),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),),
-        Flexible(
-          child: ListView.builder(
-              padding: const EdgeInsets.all(8.0),
-              reverse: false,
-              itemCount: 9,
-              itemBuilder: (_, int index) {
-                return Wrap(
-                    direction: Axis.horizontal,
-                    children: [(rawData[_group]["detail"][index]).length==2?
-                    Card(
-                      color: Colors.white10,
-                      child: Column(
-                        children: [
-                          ExpansionTile(
-                            title: Text(rawData[_group]["detail"][index][0]["name"], style: TextStyle(color: Color(0xFF58A6FF)),),
-                            subtitle: Text(rawData[_group]["detail"][index][0]["code"]+" | "+rawData[_group]["detail"][index][0]["teach"]),
-                            children: [
-                              Text("Meeting ID: "+rawData[_group]["detail"][index][0]["id"]+"\n",
-                                style: TextStyle(
-                                  fontSize: 15.0
-                                ),
-                              ),
-                              Text("Password: "+rawData[_group]["detail"][index][0]["pwd"],
-                                style: TextStyle(
-                                    fontSize: 15.0
-                                ),
-                              ),
-                            ],
-                            expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                            expandedAlignment: Alignment.topLeft,
-                            childrenPadding: const EdgeInsets.all(15.0),
-                            leading: CircleAvatar(
-                              child: Text(rawData[_group]["detail"][index][0]["timeS"]+"\n----------\n"+rawData[_group]["detail"][index][0]["timeE"],
-                                style: TextStyle(
-                                    fontSize: 13.0
-                                ),
-                              ),
-                              radius: 30.0,
-                            ),
-                            trailing: ElevatedButton(
-                              child: Text("Join"),
-                              onPressed: rawData[_group]["detail"][index][0]["url"]==""?null:() async {
-                                if (await canLaunch(rawData[_group]["detail"][index][0]["url"])) {
-                                  await launch(rawData[_group]["detail"][index][0]["url"]);
-                                } else {
-                                  throw 'Could not launch';
-                                }
-                              },
-                            ),
-                          ),
-                          ExpansionTile(
-                            title: Text(rawData[_group]["detail"][index][1]["name"], style: TextStyle(color: Color(0xFF58A6FF)),),
-                            subtitle: Text(rawData[_group]["detail"][index][1]["code"]+" | "+rawData[_group]["detail"][index][1]["teach"]),
-                            children: [
-                              Text("Meeting ID: "+rawData[_group]["detail"][index][1]["id"]+"\n",
-                                style: TextStyle(
-                                    fontSize: 15.0
-                                ),
-                              ),
-                              Text("Password: "+rawData[_group]["detail"][index][1]["pwd"],
-                                style: TextStyle(
-                                    fontSize: 15.0
-                                ),
-                              ),
-                            ],
-                            expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                            expandedAlignment: Alignment.topLeft,
-                            childrenPadding: const EdgeInsets.all(15.0),
-                            leading: CircleAvatar(
-                              child: Text(rawData[_group]["detail"][index][1]["timeS"]+"\n----------\n"+rawData[_group]["detail"][index][1]["timeE"],
-                                style: TextStyle(
-                                    fontSize: 13.0
-                                ),
-                              ),
-                              radius: 30.0,
-                            ),
-                            trailing: ElevatedButton(
-                              child: Text("Join"),
-                              onPressed: rawData[_group]["detail"][index][1]["url"]==""?null:() async {
-                                if (await canLaunch(rawData[_group]["detail"][index][1]["url"])) {
-                                  await launch(rawData[_group]["detail"][index][1]["url"]);
-                                } else {
-                                  throw 'Could not launch';
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ):
-                    Card(
-                      color: Colors.white10,
-                      child: IgnorePointer(
-                        ignoring: rawData[_group]["detail"][index]["id"]=="",
-                        child: ExpansionTile(
-                          title: Text(rawData[_group]["detail"][index]["name"], style: TextStyle(color: Color(0xFF58A6FF)),),
-                          subtitle: Text(
-                              (rawData[_group]["detail"][index]["code"]+" | "+rawData[_group]["detail"][index]["teach"])==" | "?"":
-                              rawData[_group]["detail"][index]["code"]+" | "+rawData[_group]["detail"][index]["teach"]
-                          ),
-                          children: [
-                            Text("Meeting ID: "+rawData[_group]["detail"][index]["id"]+"\n",
-                              style: TextStyle(
-                                  fontSize: 15.0
-                              ),
-                            ),
-                            Text("Password: "+rawData[_group]["detail"][index]["pwd"],
-                              style: TextStyle(
-                                  fontSize: 15.0
-                              ),
-                            ),
-                          ],
-                          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                          expandedAlignment: Alignment.topLeft,
-                          childrenPadding: const EdgeInsets.all(15.0),
-                          leading: CircleAvatar(
-                            child: Text(rawData[_group]["detail"][index]["timeS"]+"\n----------\n"+rawData[_group]["detail"][index]["timeE"],
-                              style: TextStyle(
-                                  fontSize: 13.0
-                              ),
-                            ),
-                            radius: 30.0,
-                          ),
-                          trailing: (rawData[_group]["detail"][index]["name"]=="One Hour Quiz" || rawData[_group]["detail"][index]["name"]=="BREAK")?
-                          Text(""):ElevatedButton(
-                            child: Text("Join"),
-                            onPressed: rawData[_group]["detail"][index]["url"]==""?null:() async {
-                              if (await canLaunch(rawData[_group]["detail"][index]["url"])) {
-                                await launch(rawData[_group]["detail"][index]["url"]);
-                              } else {
-                                throw 'Could not launch';
-                              }
-                            },
-                          ),
-                        ),
-                      )
-                    ),
-                    ]
-                );
-              }),
-        ),
-        Divider(
-          height: 1.0,
-        ),
-        Wrap(
-          direction: Axis.horizontal,
-          children: [
-            Text("Crafted with ❤ by CRYP73R",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15.0,
-              ),
-            )
-          ],
-        ),
-      ],
     );
   }
 
-  Widget popUpMenuButton() {
-    return PopupMenuButton(
-      icon: Icon(Icons.more_vert),
-      tooltip: "Menu",
-      itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-        const PopupMenuItem(
-          child: Text("Discrepancy"),
-          value: "discrepancy",
-        ),
-        const PopupMenuItem(
-          child: Text("Missing Data"),
-          value: "missing",
-        ),
-        const PopupMenuItem(
-          child: Text("Timetable Changed"),
-          value: "timeTable",
-        ),
-        const PopupMenuItem(
-          child: Text("Change Roll No"),
-          value: "change",
-        ),
-        const PopupMenuItem(
-          child: Text("Report a Problem"),
-          value: "reportPrb",
-        ),
-        const PopupMenuItem(
-          child: Text("Check for Updates"),
-          value: "update",
-        ),
-      ],
-      onSelected: (value) async {
-        if (value.toString()=="discrepancy") {
-          if (await canLaunch(discrepancyUrl)) {
-            await launch(discrepancyUrl);
-          } else {
-            throw 'Could not launch';
-          }
-        }
-        else if (value.toString()=="missing") {
-          if (await canLaunch(missingUrl)) {
-            await launch(missingUrl);
-          } else {
-            throw 'Could not launch';
-          }
-        }
-        else if (value.toString()=="timeTable") {
-          if (await canLaunch(timeTableUrl)) {
-            await launch(timeTableUrl);
-          } else {
-            throw 'Could not launch';
-          }
-        }
-        else if (value.toString()=="change") {
+  IconButton logoutButton() {
+    return IconButton(
+        tooltip: "Logout",
+        icon: Icon(Icons.logout),
+        onPressed: () {
           _removeRollNumber();
           Navigator.pushReplacementNamed(context, "/startScreen");
-        }
-        else if (value.toString()=="reportPrb") {
-          if (await canLaunch(reportPrbUrl)) {
-            await launch(reportPrbUrl);
-          } else {
-            throw 'Could not launch';
-          }
-        }
-        else if (value.toString()=="update") {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateAppScreen()));
-        }
-      },
-    );
+        });
   }
 }

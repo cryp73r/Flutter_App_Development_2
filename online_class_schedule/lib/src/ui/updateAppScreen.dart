@@ -50,11 +50,11 @@ class _UpdateAppScreenState extends State<UpdateAppScreen> {
               children: [
                 Image.asset(
                     "images/ic_launcher.png",
-                  width: 150.0,
-                  height: 150.0,
+                  width: 140.0,
+                  height: 140.0,
                 ),
                 Container(margin: const EdgeInsets.only(top: 10.0, bottom: 10.0),),
-                Center(child: appVer==rawData["ver"]?Text("No Update Available", style: updateStyle(),):Text("New Update Available", style: updateStyle(),)),
+                Center(child: appVer==rawData["ver"]?Text("No Updates Available", style: updateStyle(),):Text("New Update Available", style: updateStyle(),)),
                 Container(margin: const EdgeInsets.only(top: 4.0, bottom: 4.0),),
                 Center(child: appVer==rawData["ver"]?Text(appVer, style: newVerStyle(),):Text("New App Version: " + rawData["ver"], style: newVerStyle(),)),
                 Container(margin: const EdgeInsets.only(top: 2.0, bottom: 2.0),),
@@ -78,8 +78,9 @@ class _UpdateAppScreenState extends State<UpdateAppScreen> {
                       )
                     ),
                     onPressed: () async {
-                      if (await canLaunch(rawData["url"])) {
-                      await launch(rawData["url"]);
+                      String _sourceUrl = "https://ocs.pythonanywhere.com" + rawData["url"];
+                      if (await canLaunch(_sourceUrl)) {
+                      await launch(_sourceUrl);
                       } else {
                       throw 'Could not launch';
                       }

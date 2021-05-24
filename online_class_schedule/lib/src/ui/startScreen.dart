@@ -22,6 +22,7 @@ class _StartScreenState extends State<StartScreen> {
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    double _height = MediaQuery.of(context).size.height;
     return Scaffold(
         appBar: AppBar(),
         resizeToAvoidBottomInset: false,
@@ -30,19 +31,19 @@ class _StartScreenState extends State<StartScreen> {
           alignment: Alignment.center,
           child: Column(
             children: [
-              Wrap(
-                direction: Axis.horizontal,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("WELCOME",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 45.0,
-                      letterSpacing: 10.0
+                        fontWeight: FontWeight.bold,
+                        fontSize: 45.0,
+                        letterSpacing: 10.0
                     ),
                   ),
                 ],
               ),
-              Container(margin: const EdgeInsets.only(top: 60.0, bottom: 60.0),),
+              Container(margin: EdgeInsets.only(top: _height/4),),
               Form(key: formKey, child: Column(
                 children: [
                   rollNoField(),
@@ -59,8 +60,8 @@ class _StartScreenState extends State<StartScreen> {
                       InkWell(
                         child: Text("Report a Problem🐞",
                           style: TextStyle(
-                            fontSize: 14.7,
-                            color: Colors.deepPurpleAccent
+                              fontSize: 14.7,
+                              color: Colors.deepPurpleAccent
                           ),
                         ),
                         onTap: () async {
@@ -71,7 +72,7 @@ class _StartScreenState extends State<StartScreen> {
                           }
                         },
                       ),
-                      Container(margin: const EdgeInsets.only(top: 8.0, bottom: 8.0),),
+                      Container(margin: const EdgeInsets.only(top: 6.0, bottom: 6.0),),
                       Text("Crafted with ❤ by CRYP73R",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -127,14 +128,14 @@ class _StartScreenState extends State<StartScreen> {
         ),
       ),
       validator: (String value) {
-        if (!value.startsWith("1901220100") && !value.startsWith("1901220130")) {
+        if ((!value.startsWith("1901220100") && !value.startsWith("1901220130")) && !value.startsWith("2001220109")) {
           return "Please Enter a Valid Roll Number";
         }
         else if (value.length!=13) {
           return "Please Enter a Valid 13-digit Roll Number";
         }
-        else if (value.startsWith("1901220100") && int.parse(value.substring(10))>145) {
-          return "Max. Roll Number Exceeded\n\n1) CS41 -> 001 - 028\n2) CS42 -> 029 - 057\n3) CS43 -> 058 - 086\n4) CS44 -> 087 - 117\n5) CS45 -> 118 - 145";
+        else if ((value.startsWith("1901220100") && int.parse(value.substring(10))>133) || (value.startsWith("2001220109") && int.parse(value.substring(10))>11)) {
+          return "Max. Roll Number Exceeded\n\n1) CS41 -> 001 - 028\n2) CS42 -> 029 - 057\n3) CS43 -> 058 - 086\n4) CS44 -> 087 - 117\n5) CS45 -> 118 - 133\n6) CS45 -> 001 - 011 (Lateral Entry)";
         }
         else if (value.startsWith("1901220130") && int.parse(value.substring(10))>134) {
           return "Max. Roll Number Exceeded\n\n1) IT41 -> 001 - 033\n2) IT42 -> 034 - 067\n3) IT43 -> 068 - 100\n4) IT44 -> 101 - 134";
