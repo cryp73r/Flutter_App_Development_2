@@ -519,8 +519,29 @@ class _DetailScreenState extends State<DetailScreen> {
         tooltip: "Logout",
         icon: Icon(Icons.logout),
         onPressed: () {
-          _removeRollNumber();
-          Navigator.pushReplacementNamed(context, "/startScreen");
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Alert!"),
+                  content: const Text(
+                      "You will be Logged Out. You will need to re-enter your Roll no. in order to use this app."),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("CANCEL")),
+                    TextButton(
+                        onPressed: () {
+                          _removeRollNumber();
+                          Navigator.pushNamedAndRemoveUntil(context, "/startScreen", (route) => false);
+                        },
+                        child: const Text("OK")),
+                  ],
+                );
+              });
         });
   }
 }

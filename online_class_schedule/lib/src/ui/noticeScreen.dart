@@ -63,12 +63,13 @@ class _NoticeScreenState extends State<NoticeScreen> {
                 Card(
                   color: Colors.white10,
                   child: ListTile(
-                    title: Text(rawData["data"][index]["department"], style: TextStyle(color: Color(0xFFDF8B00)),),
+                    title: Text(rawData["data"][index]["department"], style: TextStyle(color: Color(0xFFDF8B00)), textAlign: TextAlign.justify,),
                     subtitle: Text(
                         "Dated: ${DateFormat.yMMMMd('en_US').format(DateTime(int.parse(rawData["data"][index]["date"].substring(0, 4)), int.parse(rawData["data"][index]["date"].substring(5, 7)), int.parse(rawData["data"][index]["date"].substring(8, 10))))}\n\n"+
                             rawData["data"][index]["message"]+"\n\n"+
                             rawData["data"][index]["designation"]+"\n"+
-                            rawData["data"][index]["signatory"]
+                            rawData["data"][index]["signatory"],
+                      textAlign: TextAlign.justify,
                     ),
                   ),
                 ),
