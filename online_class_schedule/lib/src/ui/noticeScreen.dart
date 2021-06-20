@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:online_class_schedule/src/apiDataHandler/getJsonNoticeData.dart';
+import 'package:online_class_schedule/src/apiDataHandler/getJsonData.dart';
 import 'package:online_class_schedule/src/utils/utils.dart';
 
 class NoticeScreen extends StatefulWidget {
@@ -19,7 +19,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
         centerTitle: true,
       ),
       body: FutureBuilder(
-        future: getJsonNoticeData(apiUrlNotice),
+        future: getJsonData(apiUrlNotice),
         builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
           if (snapshot.hasData) {
             Map rawData = snapshot.data;

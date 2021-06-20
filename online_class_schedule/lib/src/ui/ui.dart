@@ -28,7 +28,6 @@ class UI extends StatelessWidget {
       primaryColor: Colors.black,
       backgroundColor: Colors.black,
       indicatorColor: Color(0xff0e1d36),
-      buttonColor: Color(0xff3B3B3B),
       hintColor: Color(0xff280C0B),
       highlightColor: Color(0xff372901),
       hoverColor: Color(0xff3a3a3b),

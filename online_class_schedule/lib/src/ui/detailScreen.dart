@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:online_class_schedule/src/apiDataHandler/getJsonClassData.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:online_class_schedule/src/apiDataHandler/getJsonData.dart';
 import 'package:online_class_schedule/src/ui/noticeScreen.dart';
 import 'package:online_class_schedule/src/ui/updateAppScreen.dart';
+import 'package:online_class_schedule/src/utils/ad_helper.dart';
 import 'package:online_class_schedule/src/utils/getBranchCode.dart';
 import 'package:online_class_schedule/src/utils/getGroup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +22,10 @@ class _DetailScreenState extends State<DetailScreen> {
   int _branchCode;
   String _strRollNo = "";
 
+  BannerAd _ad1;
+  BannerAd _ad2;
+  bool _isAdLoaded = false;
+
   _getRollNumber() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -35,9 +41,32 @@ class _DetailScreenState extends State<DetailScreen> {
     _strRollNo = "";
   }
 
+  BannerAd _bannerAd() {
+    return BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      size: AdSize.banner,
+      request: AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          print('Ad load failed (code=${error.code} message=${error.message})');
+        },
+      ),
+    );
+  }
+
   @override
   void initState() {
     _getRollNumber();
+    _ad1 = _bannerAd();
+    _ad2 = _bannerAd();
+    _ad1.load();
+    _ad2.load();
     super.initState();
   }
 
@@ -55,8 +84,8 @@ class _DetailScreenState extends State<DetailScreen> {
           ? groupErrorWidget()
           : FutureBuilder(
               future: _branchCode == 10
-                  ? getJsonClassData(apiUrlCS)
-                  : getJsonClassData(apiUrlIT),
+                  ? getJsonData(apiUrlCS)
+                  : getJsonData(apiUrlIT),
               builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
                 if (snapshot.hasData) {
                   Map rawData = snapshot.data;
@@ -91,285 +120,311 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget groupSuccessWidget(Map rawData) {
-    return (rawData[_group]["count"]["class"] +
-                rawData[_group]["count"]["tute"] +
-                rawData[_group]["count"]["lab"]) ==
-            0
-        ? Center(
-            child: Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "No Classes Today",
-                    style: TextStyle(
-                      fontSize: 25.0,
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 5.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-        : Column(
-            children: [
-              Center(
+    return Stack(
+      children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Image.asset(
+              "images/sapphire-min.jpg",
+            fit: BoxFit.fill,
+            color: Colors.black87,
+            colorBlendMode: BlendMode.darken,
+          ),
+        ),
+        (rawData[_group]["count"]["class"] +
+                    rawData[_group]["count"]["tute"] +
+                    rawData[_group]["count"]["lab"]) ==
+                0
+            ? Center(
                 child: Container(
-                  margin: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    "Today you have ${rawData[_group]["count"]["class"]} Lecture, ${rawData[_group]["count"]["tute"]} Tute and ${rawData[_group]["count"]["lab"]} Lab",
-                    style: TextStyle(
-                      fontSize: 17.0,
-                      color: Color(0xFFEB596E),
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "No Classes Today",
+                        style: TextStyle(
+                          fontSize: 25.0,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 5.0,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              Flexible(
-                child: ListView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    reverse: false,
-                    itemCount: 9,
-                    itemBuilder: (_, int index) {
-                      return Wrap(direction: Axis.horizontal, children: [
-                        (rawData[_group]["detail"][index]).length == 2
-                            ? Card(
-                                color: Colors.white10,
-                                child: Column(
-                                  children: [
-                                    ExpansionTile(
-                                      title: Text(
-                                        rawData[_group]["detail"][index][0]
-                                            ["name"],
-                                        style:
-                                            TextStyle(color: Color(0xFF58A6FF)),
-                                      ),
-                                      subtitle: Text(rawData[_group]["detail"]
-                                              [index][0]["code"] +
-                                          " | " +
-                                          rawData[_group]["detail"][index][0]
-                                              ["teach"]),
+              )
+            : Column(
+                children: [
+                  _isAdLoaded?Container(
+                    child: AdWidget(ad: _ad1),
+                    width: MediaQuery.of(context).size.width,
+                    height: 72.0,
+                    alignment: Alignment.center,
+                  ):Container(),
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        "Today you have ${rawData[_group]["count"]["class"]} Lecture, ${rawData[_group]["count"]["tute"]} Tute and ${rawData[_group]["count"]["lab"]} Lab",
+                        style: TextStyle(
+                          fontSize: 17.0,
+                          color: Color(0xFFEB596E),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: ListView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        reverse: false,
+                        itemCount: 9,
+                        itemBuilder: (_, int index) {
+                          return Wrap(direction: Axis.horizontal, children: [
+                            (rawData[_group]["detail"][index]).length == 2
+                                ? Card(
+                                    color: Colors.white10,
+                                    child: Column(
                                       children: [
-                                        Text(
-                                          "Meeting ID: " +
-                                              rawData[_group]["detail"][index]
-                                                  [0]["id"] +
-                                              "\n",
-                                          style: TextStyle(fontSize: 15.0),
-                                        ),
-                                        Text(
-                                          "Password: " +
-                                              rawData[_group]["detail"][index]
-                                                  [0]["pwd"],
-                                          style: TextStyle(fontSize: 15.0),
-                                        ),
-                                      ],
-                                      expandedCrossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      expandedAlignment: Alignment.topLeft,
-                                      childrenPadding:
-                                          const EdgeInsets.all(15.0),
-                                      leading: CircleAvatar(
-                                        child: Text(
-                                          rawData[_group]["detail"][index][0]
-                                                  ["timeS"] +
-                                              "\n----------\n" +
-                                              rawData[_group]["detail"][index]
-                                                  [0]["timeE"],
-                                          style: TextStyle(fontSize: 13.0),
-                                        ),
-                                        radius: 30.0,
-                                      ),
-                                      trailing: ElevatedButton(
-                                        child: Text("Join"),
-                                        onPressed: rawData[_group]["detail"]
-                                                    [index][0]["url"] ==
-                                                ""
-                                            ? null
-                                            : () async {
-                                                if (await canLaunch(
-                                                    rawData[_group]["detail"]
-                                                        [index][0]["url"])) {
-                                                  await launch(rawData[_group]
-                                                          ["detail"][index][0]
-                                                      ["url"]);
-                                                } else {
-                                                  throw 'Could not launch';
-                                                }
-                                              },
-                                      ),
-                                    ),
-                                    ExpansionTile(
-                                      title: Text(
-                                        rawData[_group]["detail"][index][1]
-                                            ["name"],
-                                        style:
-                                            TextStyle(color: Color(0xFF58A6FF)),
-                                      ),
-                                      subtitle: Text(rawData[_group]["detail"]
-                                              [index][1]["code"] +
-                                          " | " +
-                                          rawData[_group]["detail"][index][1]
-                                              ["teach"]),
-                                      children: [
-                                        Text(
-                                          "Meeting ID: " +
-                                              rawData[_group]["detail"][index]
-                                                  [1]["id"] +
-                                              "\n",
-                                          style: TextStyle(fontSize: 15.0),
-                                        ),
-                                        Text(
-                                          "Password: " +
-                                              rawData[_group]["detail"][index]
-                                                  [1]["pwd"],
-                                          style: TextStyle(fontSize: 15.0),
-                                        ),
-                                      ],
-                                      expandedCrossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      expandedAlignment: Alignment.topLeft,
-                                      childrenPadding:
-                                          const EdgeInsets.all(15.0),
-                                      leading: CircleAvatar(
-                                        child: Text(
-                                          rawData[_group]["detail"][index][1]
-                                                  ["timeS"] +
-                                              "\n----------\n" +
-                                              rawData[_group]["detail"][index]
-                                                  [1]["timeE"],
-                                          style: TextStyle(fontSize: 13.0),
-                                        ),
-                                        radius: 30.0,
-                                      ),
-                                      trailing: ElevatedButton(
-                                        child: Text("Join"),
-                                        onPressed: rawData[_group]["detail"]
-                                                    [index][1]["url"] ==
-                                                ""
-                                            ? null
-                                            : () async {
-                                                if (await canLaunch(
-                                                    rawData[_group]["detail"]
-                                                        [index][1]["url"])) {
-                                                  await launch(rawData[_group]
-                                                          ["detail"][index][1]
-                                                      ["url"]);
-                                                } else {
-                                                  throw 'Could not launch';
-                                                }
-                                              },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Card(
-                                color: Colors.white10,
-                                child: IgnorePointer(
-                                  ignoring: rawData[_group]["detail"][index]
-                                          ["id"] ==
-                                      "",
-                                  child: ExpansionTile(
-                                    title: Text(
-                                      rawData[_group]["detail"][index]["name"],
-                                      style:
-                                          TextStyle(color: Color(0xFF58A6FF)),
-                                    ),
-                                    subtitle: Text((rawData[_group]["detail"]
-                                                    [index]["code"] +
-                                                " | " +
-                                                rawData[_group]["detail"][index]
-                                                    ["teach"]) ==
-                                            " | "
-                                        ? ""
-                                        : rawData[_group]["detail"][index]
-                                                ["code"] +
-                                            " | " +
-                                            rawData[_group]["detail"][index]
-                                                ["teach"]),
-                                    children: [
-                                      Text(
-                                        "Meeting ID: " +
-                                            rawData[_group]["detail"][index]
-                                                ["id"] +
-                                            "\n",
-                                        style: TextStyle(fontSize: 15.0),
-                                      ),
-                                      Text(
-                                        "Password: " +
-                                            rawData[_group]["detail"][index]
-                                                ["pwd"],
-                                        style: TextStyle(fontSize: 15.0),
-                                      ),
-                                    ],
-                                    expandedCrossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    expandedAlignment: Alignment.topLeft,
-                                    childrenPadding: const EdgeInsets.all(15.0),
-                                    leading: CircleAvatar(
-                                      child: Text(
-                                        rawData[_group]["detail"][index]
-                                                ["timeS"] +
-                                            "\n----------\n" +
-                                            rawData[_group]["detail"][index]
-                                                ["timeE"],
-                                        style: TextStyle(fontSize: 13.0),
-                                      ),
-                                      radius: 30.0,
-                                    ),
-                                    trailing: (rawData[_group]["detail"][index]
-                                                    ["name"] ==
-                                                "One Hour Quiz" ||
-                                            rawData[_group]["detail"][index]
-                                                    ["name"] ==
-                                                "BREAK")
-                                        ? Text("")
-                                        : ElevatedButton(
+                                        ExpansionTile(
+                                          title: Text(
+                                            rawData[_group]["detail"][index][0]
+                                                ["name"],
+                                            style:
+                                                TextStyle(color: Color(0xFF58A6FF)),
+                                          ),
+                                          subtitle: Text(rawData[_group]["detail"]
+                                                  [index][0]["code"] +
+                                              " | " +
+                                              rawData[_group]["detail"][index][0]
+                                                  ["teach"]),
+                                          children: [
+                                            Text(
+                                              "Meeting ID: " +
+                                                  rawData[_group]["detail"][index]
+                                                      [0]["id"] +
+                                                  "\n",
+                                              style: TextStyle(fontSize: 15.0),
+                                            ),
+                                            Text(
+                                              "Password: " +
+                                                  rawData[_group]["detail"][index]
+                                                      [0]["pwd"],
+                                              style: TextStyle(fontSize: 15.0),
+                                            ),
+                                          ],
+                                          expandedCrossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          expandedAlignment: Alignment.topLeft,
+                                          childrenPadding:
+                                              const EdgeInsets.all(15.0),
+                                          leading: CircleAvatar(
+                                            child: Text(
+                                              rawData[_group]["detail"][index][0]
+                                                      ["timeS"] +
+                                                  "\n----------\n" +
+                                                  rawData[_group]["detail"][index]
+                                                      [0]["timeE"],
+                                              style: TextStyle(fontSize: 13.0),
+                                            ),
+                                            radius: 30.0,
+                                          ),
+                                          trailing: ElevatedButton(
                                             child: Text("Join"),
                                             onPressed: rawData[_group]["detail"]
-                                                        [index]["url"] ==
+                                                        [index][0]["url"] ==
                                                     ""
                                                 ? null
                                                 : () async {
                                                     if (await canLaunch(
-                                                        rawData[_group]
-                                                                ["detail"]
-                                                            [index]["url"])) {
-                                                      await launch(
-                                                          rawData[_group]
-                                                                  ["detail"]
-                                                              [index]["url"]);
+                                                        rawData[_group]["detail"]
+                                                            [index][0]["url"])) {
+                                                      await launch(rawData[_group]
+                                                              ["detail"][index][0]
+                                                          ["url"]);
                                                     } else {
                                                       throw 'Could not launch';
                                                     }
                                                   },
                                           ),
-                                  ),
-                                )),
-                      ]);
-                    }),
-              ),
-              Divider(
-                height: 1.0,
-              ),
-              Wrap(
-                direction: Axis.horizontal,
-                children: [
-                  Text(
-                    "Crafted with ❤ by CRYP73R",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15.0,
-                    ),
-                  )
+                                        ),
+                                        ExpansionTile(
+                                          title: Text(
+                                            rawData[_group]["detail"][index][1]
+                                                ["name"],
+                                            style:
+                                                TextStyle(color: Color(0xFF58A6FF)),
+                                          ),
+                                          subtitle: Text(rawData[_group]["detail"]
+                                                  [index][1]["code"] +
+                                              " | " +
+                                              rawData[_group]["detail"][index][1]
+                                                  ["teach"]),
+                                          children: [
+                                            Text(
+                                              "Meeting ID: " +
+                                                  rawData[_group]["detail"][index]
+                                                      [1]["id"] +
+                                                  "\n",
+                                              style: TextStyle(fontSize: 15.0),
+                                            ),
+                                            Text(
+                                              "Password: " +
+                                                  rawData[_group]["detail"][index]
+                                                      [1]["pwd"],
+                                              style: TextStyle(fontSize: 15.0),
+                                            ),
+                                          ],
+                                          expandedCrossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          expandedAlignment: Alignment.topLeft,
+                                          childrenPadding:
+                                              const EdgeInsets.all(15.0),
+                                          leading: CircleAvatar(
+                                            child: Text(
+                                              rawData[_group]["detail"][index][1]
+                                                      ["timeS"] +
+                                                  "\n----------\n" +
+                                                  rawData[_group]["detail"][index]
+                                                      [1]["timeE"],
+                                              style: TextStyle(fontSize: 13.0),
+                                            ),
+                                            radius: 30.0,
+                                          ),
+                                          trailing: ElevatedButton(
+                                            child: Text("Join"),
+                                            onPressed: rawData[_group]["detail"]
+                                                        [index][1]["url"] ==
+                                                    ""
+                                                ? null
+                                                : () async {
+                                                    if (await canLaunch(
+                                                        rawData[_group]["detail"]
+                                                            [index][1]["url"])) {
+                                                      await launch(rawData[_group]
+                                                              ["detail"][index][1]
+                                                          ["url"]);
+                                                    } else {
+                                                      throw 'Could not launch';
+                                                    }
+                                                  },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Card(
+                                    color: Colors.white10,
+                                    child: IgnorePointer(
+                                      ignoring: rawData[_group]["detail"][index]
+                                              ["id"] ==
+                                          "",
+                                      child: ExpansionTile(
+                                        title: Text(
+                                          rawData[_group]["detail"][index]["name"],
+                                          style:
+                                              TextStyle(color: Color(0xFF58A6FF)),
+                                        ),
+                                        subtitle: Text((rawData[_group]["detail"]
+                                                        [index]["code"] +
+                                                    " | " +
+                                                    rawData[_group]["detail"][index]
+                                                        ["teach"]) ==
+                                                " | "
+                                            ? ""
+                                            : rawData[_group]["detail"][index]
+                                                    ["code"] +
+                                                " | " +
+                                                rawData[_group]["detail"][index]
+                                                    ["teach"]),
+                                        children: [
+                                          Text(
+                                            "Meeting ID: " +
+                                                rawData[_group]["detail"][index]
+                                                    ["id"] +
+                                                "\n",
+                                            style: TextStyle(fontSize: 15.0),
+                                          ),
+                                          Text(
+                                            "Password: " +
+                                                rawData[_group]["detail"][index]
+                                                    ["pwd"],
+                                            style: TextStyle(fontSize: 15.0),
+                                          ),
+                                        ],
+                                        expandedCrossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        expandedAlignment: Alignment.topLeft,
+                                        childrenPadding: const EdgeInsets.all(15.0),
+                                        leading: CircleAvatar(
+                                          child: Text(
+                                            rawData[_group]["detail"][index]
+                                                    ["timeS"] +
+                                                "\n----------\n" +
+                                                rawData[_group]["detail"][index]
+                                                    ["timeE"],
+                                            style: TextStyle(fontSize: 13.0),
+                                          ),
+                                          radius: 30.0,
+                                        ),
+                                        trailing: (rawData[_group]["detail"][index]
+                                                        ["name"] ==
+                                                    "One Hour Quiz" ||
+                                                rawData[_group]["detail"][index]
+                                                        ["name"] ==
+                                                    "BREAK")
+                                            ? Text("")
+                                            : ElevatedButton(
+                                                child: Text("Join"),
+                                                onPressed: rawData[_group]["detail"]
+                                                            [index]["url"] ==
+                                                        ""
+                                                    ? null
+                                                    : () async {
+                                                        if (await canLaunch(
+                                                            rawData[_group]
+                                                                    ["detail"]
+                                                                [index]["url"])) {
+                                                          await launch(
+                                                              rawData[_group]
+                                                                      ["detail"]
+                                                                  [index]["url"]);
+                                                        } else {
+                                                          throw 'Could not launch';
+                                                        }
+                                                      },
+                                              ),
+                                      ),
+                                    )),
+                          ]);
+                        }),
+                  ),
+                  Divider(
+                    height: 2.0,
+                  ),
+                  _isAdLoaded?Container(
+                    child: AdWidget(ad: _ad2),
+                    width: MediaQuery.of(context).size.width,
+                    height: 72.0,
+                    alignment: Alignment.center,
+                  ):Container(),
+                  Wrap(
+                    direction: Axis.horizontal,
+                    children: [
+                      Text(
+                        "Crafted with ❤ by CRYP73R",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.0,
+                        ),
+                      )
+                    ],
+                  ),
                 ],
               ),
-            ],
-          );
+      ],
+    );
   }
 
   Drawer appDrawer() {
@@ -379,7 +434,8 @@ class _DetailScreenState extends State<DetailScreen> {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Color(0xFF151313),
+              // color: Color(0xFF151313),
+              image: DecorationImage(image: AssetImage("images/cloud-min.jpg"), fit: BoxFit.fill, colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.dstATop),),
             ),
             child: Column(
               children: [
@@ -543,5 +599,12 @@ class _DetailScreenState extends State<DetailScreen> {
                 );
               });
         });
+  }
+
+  @override
+  void dispose() {
+    _ad1.dispose();
+    _ad2.dispose();
+    super.dispose();
   }
 }

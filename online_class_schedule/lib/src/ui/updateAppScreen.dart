@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:online_class_schedule/src/apiDataHandler/getJsonVerData.dart';
+import 'package:online_class_schedule/src/apiDataHandler/getJsonData.dart';
 import 'package:online_class_schedule/src/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,7 +16,7 @@ class _UpdateAppScreenState extends State<UpdateAppScreen> {
     return Scaffold(
       appBar: AppBar(),
       body: FutureBuilder(
-          future: getJsonVerData(apiUrlVer),
+          future: getJsonData(apiUrlVer),
           builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
             if (snapshot.hasData) {
               Map rawData = snapshot.data;
